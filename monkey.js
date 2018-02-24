@@ -162,6 +162,7 @@ function startMonkey() {
     var config = { childList: true, subtree: true };
     var j = 0;
     var i = 0;
+    var k = 0;
 
     // Callback function to execute when mutations are observed
     var callback = function(mutationsList) {
@@ -181,8 +182,8 @@ function startMonkey() {
                 }
                 var items = node2.getElementsByTagName("*");
 
-                for (var i = items.length; i--;) {
-                    var node = items[i];
+                for (k = items.length; k--;) {
+                    var node = items[k];
                     if (!node.$EV || node.tagName === 'A') {
                         continue;
                     }
