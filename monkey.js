@@ -1,4 +1,4 @@
-const elementsWithClick = [];
+var elementsWithClick = [];
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
@@ -6,7 +6,7 @@ function getRandomInt(max) {
 
 var loop = null;
 
-const wrapper = document.createElement('div');
+var wrapper = document.createElement('div');
 
 function updateErrorWrapper() {
     wrapper.innerHTML = '<div style="position: fixed;' +
@@ -32,14 +32,14 @@ window.addEventListener('error', function() {
     stopMonkey();
     document.body.appendChild(wrapper);
 
-    console.info("POST TO RAYGUN");
+    // console.info("POST TO RAYGUN");
 
-    if (!process.env.TEST && process.env.NODE_ENV === 'production') {
-        window.rg4js('send', {
-            error: errorEvent,
-            customData: [{'tester-monkey': 'tester-monkey'}]
-        });
-    }
+    // if (!process.env.TEST && process.env.NODE_ENV === 'production') {
+    //     window.rg4js('send', {
+    //         error: errorEvent,
+    //         customData: [{'tester-monkey': 'tester-monkey'}]
+    //     });
+    // }
 
     updateErrorWrapper();
 
@@ -88,23 +88,23 @@ function simulateClick(elem) {
     elem.dispatchEvent(evt);
 }
 
-let confirmDialogRoot = null;
-let modalRoot = null;
+var confirmDialogRoot = null;
+var modalRoot = null;
 
 function doSomething() {
-    let itemsToClick;
+    var itemsToClick;
     confirmDialogRoot = confirmDialogRoot || document.querySelector('.confirmation-popup.popup-bg');
     modalRoot = modalRoot || document.querySelector('.popup-bg');
 
     if (confirmDialogRoot && confirmDialogRoot.children.length !== 0) {
         // If there is confirm dialog we want the Monkey to click onthat because that is more to close to real user experience
-        const mandatoryItems = [];
+        var mandatoryItems = [];
 
         analyzeDOM(confirmDialogRoot, mandatoryItems);
         itemsToClick = mandatoryItems;
     } else if (modalRoot && modalRoot.children.length !== 0) {
         // If there is modal we make it mandatory
-        const mandatoryItems = [];
+        var mandatoryItems = [];
 
         analyzeDOM(modalRoot, mandatoryItems);
         itemsToClick = mandatoryItems;
@@ -116,13 +116,13 @@ function doSomething() {
         return;
     }
 
-    const index = getRandomInt(itemsToClick.length - 1);
+    var index = getRandomInt(itemsToClick.length - 1);
 
-    const element = itemsToClick[index];
+    var element = itemsToClick[index];
 
     // Ignore external links
     if (!element.rel && element.id !== 'logout' && !element.disabled) {
-        const rect = element.getBoundingClientRect();
+        var rect = element.getBoundingClientRect();
 
         showItsClickPoint(rect.x, rect.y);
         simulateClick(element);
@@ -134,10 +134,10 @@ function analyzeDOM (root, array) {
     if (root.nodeType !== 1) {
         return;
     }
-    const items = root.getElementsByTagName("*");
+    var items = root.getElementsByTagName("*");
 
-    for (let i = items.length; i--;) {
-        const node = items[i];
+    for (var i = items.length; i--;) {
+        var node = items[i];
 
         if (node.tagName !== 'A' && node.$EV && node.$EV.onClick) {
             array.push(node);
@@ -146,7 +146,7 @@ function analyzeDOM (root, array) {
 }
 
 
-let startedOnce = false;
+var startedOnce = false;
 
 function speedChange(input) {
     window.monkey.speed = Number(input.value);
@@ -156,36 +156,37 @@ function startMonkey() {
     if (loop !== null) {
         return;
     }
-    const root = document.getElementById('app');
+    var root = document.getElementById('app');
 
     // Options for the observer (which mutations to observe)
     var config = { childList: true, subtree: true };
-    var j = 0, i = 0;
+    var j = 0;
+    var i = 0;
 
     // Callback function to execute when mutations are observed
     var callback = function(mutationsList) {
         for (i = 0; i < mutationsList.length; i++) {
-            const mutation = mutationsList[i];
+            var mutation = mutationsList[i];
 
             for (j = 0; j < mutation.addedNodes.length; j++) {
-                const node = mutation.addedNodes[j];
+                var node1 = mutation.addedNodes[j];
 
-                analyzeDOM(node, elementsWithClick);
+                analyzeDOM(node1, elementsWithClick);
             }
 
             for (j = 0; j < mutation.removedNodes.length; j++) {
-                const node = mutation.removedNodes[j];
-                if (node.nodeType !== 1) {
+                var node2 = mutation.removedNodes[j];
+                if (node2.nodeType !== 1) {
                     continue;
                 }
-                const items = node.getElementsByTagName("*");
+                var items = node2.getElementsByTagName("*");
 
-                for (let i = items.length; i--;) {
-                    const node = items[i];
+                for (var i = items.length; i--;) {
+                    var node = items[i];
                     if (!node.$EV || node.tagName === 'A') {
                         continue;
                     }
-                    const index = elementsWithClick.indexOf(node);
+                    var index = elementsWithClick.indexOf(node);
 
                     if (index > -1) {
                         elementsWithClick.splice(index, 1);
