@@ -5,6 +5,7 @@ function getRandomInt(max) {
 }
 
 var loop = null;
+var root = null;
 
 var wrapper = document.createElement('div');
 
@@ -20,7 +21,7 @@ function updateErrorWrapper() {
         'background: #fff;' +
         'border: 2px solid #ccc;' +
         'padding: 100px;' +
-        'border-radius: 3px;"><img width="200" height="200" src="https://cdn4.iconfinder.com/data/icons/security-overcolor/512/bug-512.png"/><h1>Reporting JS excetion to Raygun</h1>'
+        'border-radius: 3px;"><img width="200" height="200" src="https://cdn4.iconfinder.com/data/icons/security-overcolor/512/bug-512.png"/><h1>Reporting JS excetion to Raygun</h1>';
 }
 
 function stopMonkey() {
@@ -32,27 +33,18 @@ window.addEventListener('error', function() {
     stopMonkey();
     document.body.appendChild(wrapper);
 
-    // console.info("POST TO RAYGUN");
-
-    // if (!process.env.TEST && process.env.NODE_ENV === 'production') {
-    //     window.rg4js('send', {
-    //         error: errorEvent,
-    //         customData: [{'tester-monkey': 'tester-monkey'}]
-    //     });
-    // }
-
     updateErrorWrapper();
 
     setTimeout(function () {
         document.body.removeChild(wrapper);
         window.location.reload(true);
-    }, 10000)
+    }, 10000);
 });
 
 function showItsClickPoint(x, y) {
     var fragment = document.createDocumentFragment();
     var touchSignal = document.createElement('div');
-    touchSignal.style.zIndex = 2000;
+    touchSignal.style.zIndex = '2000';
     touchSignal.style.background = "red";
     touchSignal.style['border-radius'] = '50%'; // Chrome
     touchSignal.style.borderRadius = '50%';     // Mozilla
@@ -70,7 +62,7 @@ function showItsClickPoint(x, y) {
         document.body.removeChild(element);
     }, 500);
     setTimeout(function() {
-        element.style.opacity = 0;
+        element.style.opacity = '0';
     }, 50);
     document.body.appendChild(fragment);
 }
@@ -98,18 +90,16 @@ function doSomething() {
 
     if (confirmDialogRoot && confirmDialogRoot.children.length !== 0) {
         // If there is confirm dialog we want the Monkey to click onthat because that is more to close to real user experience
-        var mandatoryItems = [];
+        itemsToClick = [];
 
-        analyzeDOM(confirmDialogRoot, mandatoryItems);
-        itemsToClick = mandatoryItems;
+        analyzeDOM(confirmDialogRoot, itemsToClick);
     } else if (modalRoot && modalRoot.children.length !== 0) {
         // If there is modal we make it mandatory
-        var mandatoryItems = [];
+        itemsToClick = [];
 
-        analyzeDOM(modalRoot, mandatoryItems);
-        itemsToClick = mandatoryItems;
+        analyzeDOM(modalRoot, itemsToClick);
     } else {
-        itemsToClick = elementsWithClick;
+        itemsToClick = analyzeDOM(root, elementsWithClick);
     }
 
     if (itemsToClick.length === 0) {
@@ -130,16 +120,17 @@ function doSomething() {
 }
 
 
-function analyzeDOM (root, array) {
-    if (root.nodeType !== 1) {
+function analyzeDOM (dom, array) {
+    array.length = 0;
+    if (dom.nodeType !== 1) {
         return;
     }
-    var items = root.getElementsByTagName("*");
+    var items = dom.getElementsByTagName("*");
 
     for (var i = items.length; i--;) {
         var node = items[i];
 
-        if (node.tagName !== 'A' && node.$EV && node.$EV.onClick) {
+        if (node.tagName !== 'A' && node.$EV && node.$EV.onClick && node.style.display !== 'none') {
             array.push(node);
         }
     }
@@ -156,63 +147,20 @@ function startMonkey() {
     if (loop !== null) {
         return;
     }
-    var root = document.getElementById('app');
-
-    // Options for the observer (which mutations to observe)
-    var config = { childList: true, subtree: true };
-    var j = 0;
-    var i = 0;
-    var k = 0;
-
-    // Callback function to execute when mutations are observed
-    var callback = function(mutationsList) {
-        for (i = 0; i < mutationsList.length; i++) {
-            var mutation = mutationsList[i];
-
-            for (j = 0; j < mutation.addedNodes.length; j++) {
-                var node1 = mutation.addedNodes[j];
-
-                analyzeDOM(node1, elementsWithClick);
-            }
-
-            for (j = 0; j < mutation.removedNodes.length; j++) {
-                var node2 = mutation.removedNodes[j];
-                if (node2.nodeType !== 1) {
-                    continue;
-                }
-                var items = node2.getElementsByTagName("*");
-
-                for (k = items.length; k--;) {
-                    var node = items[k];
-                    if (!node.$EV || node.tagName === 'A') {
-                        continue;
-                    }
-                    var index = elementsWithClick.indexOf(node);
-
-                    if (index > -1) {
-                        elementsWithClick.splice(index, 1);
-                    }
-                }
-            }
-        }
-    };
-
-    // Create an observer instance linked to the callback function
-    var observer = new MutationObserver(callback);
+    root = document.getElementById('app');
 
     analyzeDOM(root, elementsWithClick);
-    // Start observing the target node for configured mutations
-    observer.observe(root, config);
 
     console.log("STARTING MONKEY");
 
     if (!startedOnce) {
+        window.rg4js('withTags', ['monkey-tester']);
         var d = document.createElement('div');
 
         d.style.cssText = 'position: fixed; bottom: 0; right: 0; z-index: 999';
         d.innerHTML = '<button onclick="window.monkey.stopMonkey()">Stop Monkey!</button>' +
             '<button onclick="window.monkey.startMonkey()">Start Monkey</button>' +
-            '<input value="200" oninput="window.monkey.speedChange(this)" type="number"/>';
+            '<input value='+ window.monkey.speed +' oninput="window.monkey.speedChange(this)" type="number"/>';
 
         document.body.appendChild(d);
     }
@@ -223,8 +171,10 @@ function startMonkey() {
 }
 
 window.monkey = {
-    speed: 200,
+    speed: 188,
     startMonkey: startMonkey,
     stopMonkey: stopMonkey,
     speedChange: speedChange
 };
+
+startMonkey();
