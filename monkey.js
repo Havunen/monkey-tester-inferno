@@ -99,7 +99,8 @@ function doSomething() {
 
         analyzeDOM(modalRoot, itemsToClick);
     } else {
-        itemsToClick = analyzeDOM(root, elementsWithClick);
+        analyzeDOM(root, elementsWithClick);
+        itemsToClick = elementsWithClick;
     }
 
     if (itemsToClick.length === 0) {
